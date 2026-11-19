@@ -9,4 +9,5 @@ public class ChatMessage {
     private String username;
     private String content;
     private MessageType messageType;
+    private String createdAt;
 }
