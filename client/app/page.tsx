@@ -1,8 +1,10 @@
 "use client";
 
 import { Client, IMessage } from "@stomp/stompjs";
-import { Button, Input, Space, Typography } from "antd";
+import { Button, Flex, Input, Space, Typography } from "antd";
 import { useEffect, useState } from "react";
+import ChatForm from "./ChatForm";
+import { ChatMessage } from "./interface";
 
 const { Text } = Typography;
 
@@ -24,21 +26,16 @@ const stompClient = new Client({
   },
 });
 
-interface Message {
-  username: string;
-  content: string;
-  messageType: string;
-  createdAt: string;
-}
-
 export default function Home() {
   const [username, setUsername] = useState("");
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [active, setActive] = useState(false);
 
   useEffect(() => {
     stompClient.onConnect = () => {
       stompClient.subscribe("/topic/public", (message: IMessage) => {
+        // TODO: why this needs an updater function to work?
+        // maybe because this is asynchronous and receives the prev state when the component renders
         setMessages((prevMessages) => [
           ...prevMessages,
           JSON.parse(message.body),
@@ -55,6 +52,17 @@ export default function Home() {
   const handleDisconnect = async () => {
     await stompClient.deactivate();
     setActive(false);
+  };
+
+  const handleSendMessage = (message: string) => {
+    stompClient.publish({
+      destination: "/app/chat.sendMessage",
+      body: JSON.stringify({
+        username: username,
+        content: message,
+        type: MESSAGE_TYPE.CHATTING,
+      }),
+    });
   };
 
   return (
@@ -91,10 +99,21 @@ export default function Home() {
           Join
         </Button>
       </Space>
+      <ChatForm handleSendMessage={handleSendMessage} />
+      {/* Chat Area */}
       <Space orientation="vertical">
-        {messages.map((message, i) => (
-          <Text key={i}>{message.content}</Text>
-        ))}
+        {messages.map((message, i) => {
+          if (message.messageType === MESSAGE_TYPE.CHATTING) {
+            return (
+              <Flex key={i} orientation="vertical">
+                <Text>{message.username}</Text>
+                <Text>{message.content}</Text>
+              </Flex>
+            );
+          } else {
+            return <Text key={i}>{message.content}</Text>;
+          }
+        })}
       </Space>
     </Space>
   );
