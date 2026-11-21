@@ -2,9 +2,10 @@
 
 import { Client, IMessage } from "@stomp/stompjs";
 import { Button, Flex, Input, Space, Typography } from "antd";
-import { useEffect, useState } from "react";
+import { SubmitEvent, useEffect, useState } from "react";
 import ChatForm from "./ChatForm";
 import { ChatMessage } from "./interface";
+import SignInForm from "./SignInForm";
 
 const { Text } = Typography;
 
@@ -46,7 +47,18 @@ export default function Home() {
     });
   };
 
-  const publishUserDisconnect = () => {
+  const handleSignIn = (values: any) => {
+    setUsername(values["username"]);
+    stompClient.publish({
+      destination: "/app/chat.connectUser",
+      body: JSON.stringify({
+        username: values["username"],
+        type: MESSAGE_TYPE.CONNECTED,
+      }),
+    });
+  };
+
+  const publishUserDisconnected = () => {
     // check is required because user can disconnect intentionally using the disconnect button
     if (stompClient && stompClient.active) {
       stompClient.publish({
@@ -60,7 +72,7 @@ export default function Home() {
   };
 
   const handleDisconnect = async () => {
-    publishUserDisconnect();
+    publishUserDisconnected();
     await stompClient.deactivate();
     setActive(false);
   };
@@ -81,9 +93,9 @@ export default function Home() {
 
   // need to update the "username" in the handler on username update, else before unload, the username is empty
   useEffect(() => {
-    window.addEventListener("beforeunload", publishUserDisconnect);
+    window.addEventListener("beforeunload", publishUserDisconnected);
     return () => {
-      window.removeEventListener("beforeunload", publishUserDisconnect);
+      window.removeEventListener("beforeunload", publishUserDisconnected);
     };
   }, [username]);
 
@@ -97,30 +109,9 @@ export default function Home() {
           Disconnect
         </Button>
       </Space>
-      <Space>
-        <Input
-          style={{ maxWidth: "200px", width: "100%" }}
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="Type your username here..."
-          disabled={!active}
-        />
-        <Button
-          type="primary"
-          onClick={() => {
-            stompClient.publish({
-              destination: "/app/chat.connectUser",
-              body: JSON.stringify({
-                username: username,
-                type: MESSAGE_TYPE.CONNECTED,
-              }),
-            });
-          }}
-          disabled={!active}
-        >
-          Join
-        </Button>
-      </Space>
+
+      <SignInForm active={active} handleSignIn={handleSignIn} />
+
       <ChatForm handleSendMessage={handleSendMessage} />
       {/* Chat Area */}
       <Space orientation="vertical">
