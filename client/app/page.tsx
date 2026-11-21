@@ -31,6 +31,40 @@ export default function Home() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [active, setActive] = useState(false);
 
+  const handleConnect = async () => {
+    stompClient.activate();
+  };
+
+  const handleSendMessage = (message: string) => {
+    stompClient.publish({
+      destination: "/app/chat.sendMessage",
+      body: JSON.stringify({
+        username: username,
+        content: message,
+        type: MESSAGE_TYPE.CHATTING,
+      }),
+    });
+  };
+
+  const publishUserDisconnect = () => {
+    // check is required because user can disconnect intentionally using the disconnect button
+    if (stompClient && stompClient.active) {
+      stompClient.publish({
+        destination: "/app/chat.disconnectUser",
+        body: JSON.stringify({
+          username: username,
+          type: MESSAGE_TYPE.DISCONNECTED,
+        }),
+      });
+    }
+  };
+
+  const handleDisconnect = async () => {
+    publishUserDisconnect();
+    await stompClient.deactivate();
+    setActive(false);
+  };
+
   useEffect(() => {
     stompClient.onConnect = () => {
       stompClient.subscribe("/topic/public", (message: IMessage) => {
@@ -45,25 +79,13 @@ export default function Home() {
     };
   }, []);
 
-  const handleConnect = async () => {
-    stompClient.activate();
-  };
-
-  const handleDisconnect = async () => {
-    await stompClient.deactivate();
-    setActive(false);
-  };
-
-  const handleSendMessage = (message: string) => {
-    stompClient.publish({
-      destination: "/app/chat.sendMessage",
-      body: JSON.stringify({
-        username: username,
-        content: message,
-        type: MESSAGE_TYPE.CHATTING,
-      }),
-    });
-  };
+  // need to update the "username" in the handler on username update, else before unload, the username is empty
+  useEffect(() => {
+    window.addEventListener("beforeunload", publishUserDisconnect);
+    return () => {
+      window.removeEventListener("beforeunload", publishUserDisconnect);
+    };
+  }, [username]);
 
   return (
     <Space orientation="vertical">
