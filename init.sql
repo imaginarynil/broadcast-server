@@ -1,0 +1,14 @@
+CREATE TABLE IF NOT EXISTS user(
+  id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
+  username VARCHAR(32) NOT NULL UNIQUE,
+  status ENUM("online", "offline") NOT NULL DEFAULT "offline",
+  created_at DATETIME
+);
+
+CREATE TABLE IF NOT EXISTS chat(
+  id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
+  user_id INT NOT NULL,
+  message VARCHAR(2000),
+  created_at DATETIME,
+  CONSTRAINT fk_user FOREIGN KEY(user_id) REFERENCES user(id)
+);

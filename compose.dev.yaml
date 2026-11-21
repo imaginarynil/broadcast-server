@@ -1,0 +1,18 @@
+services:
+  db:
+    image: mysql:26
+    container_name: broadcast-server-db-dev
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: broadcast_server
+      MYSQL_USER: imaginarynil
+      MYSQL_PASSWORD: imaginarynil
+    volumes:
+      # - db_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 3

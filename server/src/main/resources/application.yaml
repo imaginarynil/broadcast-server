@@ -1,3 +1,12 @@
 spring:
   application:
     name: broadcast_server
+  datasource:
+    url: jdbc:mysql://localhost:3307/broadcast_server
+    username: imaginarynil
+    password: imaginarynil
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
