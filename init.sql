@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS user(
 
 CREATE TABLE IF NOT EXISTS chat(
   id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
-  user_id INT NOT NULL,
+  user_id INT,
   message VARCHAR(2000),
   created_at DATETIME,
   CONSTRAINT fk_user FOREIGN KEY(user_id) REFERENCES user(id)

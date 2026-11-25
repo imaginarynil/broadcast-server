@@ -10,7 +10,6 @@ import java.util.Optional;
 public class UserService {
     UserRepository userRepository;
 
-    // create user
     public User createUser(User user) {
         Optional<User> savedUser = userRepository.findByUsername(user.getUsername());
         if(savedUser.isPresent()) {

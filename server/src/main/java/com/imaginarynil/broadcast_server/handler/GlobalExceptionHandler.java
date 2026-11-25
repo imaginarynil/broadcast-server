@@ -1,6 +1,7 @@
 package com.imaginarynil.broadcast_server.handler;
 
 import com.imaginarynil.broadcast_server.user.UserExistsException;
+import com.imaginarynil.broadcast_server.user.UserNotFoundException;
 import jakarta.annotation.Nullable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(UserExistsException.class)
     protected ResponseEntity<Object> handleUserExistsException(UserExistsException e) {
+        ApiError err = new ApiError(HttpStatus.BAD_REQUEST, e.getMessage(), e);
+        return this.buildResponseEntity(err);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    protected ResponseEntity<Object> handleUserNotFoundException(UserNotFoundException e) {
         ApiError err = new ApiError(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         return this.buildResponseEntity(err);
     }

@@ -17,6 +17,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
+        // cannot connect from next js client without setAllowedOriginPatterns()
         registry.addEndpoint("/chat").setAllowedOriginPatterns("http://localhost:3000");
     }
 }
